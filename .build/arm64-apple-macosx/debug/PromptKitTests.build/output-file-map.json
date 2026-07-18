@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKitTests.build/primary.swiftdeps"
+  },
+  "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/Tests/PromptKitTests/PromptKitTests.swift": {
+    "dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKitTests.build/PromptKitTests.d",
+    "object": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKitTests.build/PromptKitTests.swift.o",
+    "swiftmodule": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKitTests.build/PromptKitTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKitTests.build/PromptKitTests.swiftdeps",
+    "diagnostics": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKitTests.build/PromptKitTests.dia"
+  }
+}

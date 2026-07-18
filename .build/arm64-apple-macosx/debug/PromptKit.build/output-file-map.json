@@ -1,0 +1,26 @@
+{
+  "": {
+    "swift-dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/primary.swiftdeps"
+  },
+  "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/Sources/PromptKit/Prompt.swift": {
+    "dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/Prompt.d",
+    "object": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/Prompt.swift.o",
+    "swiftmodule": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/Prompt~partial.swiftmodule",
+    "swift-dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/Prompt.swiftdeps",
+    "diagnostics": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/Prompt.dia"
+  },
+  "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/Sources/PromptKit/PromptFile.swift": {
+    "dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptFile.d",
+    "object": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptFile.swift.o",
+    "swiftmodule": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptFile~partial.swiftmodule",
+    "swift-dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptFile.swiftdeps",
+    "diagnostics": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptFile.dia"
+  },
+  "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/Sources/PromptKit/PromptPlaceholders.swift": {
+    "dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptPlaceholders.d",
+    "object": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptPlaceholders.swift.o",
+    "swiftmodule": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptPlaceholders~partial.swiftmodule",
+    "swift-dependencies": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptPlaceholders.swiftdeps",
+    "diagnostics": "/Users/davidsherlock/Documents/Development Work/Swift/Libraries/swift-prompt-kit/.build/arm64-apple-macosx/debug/PromptKit.build/PromptPlaceholders.dia"
+  }
+}
