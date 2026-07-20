@@ -21,7 +21,7 @@ Reusable, file-backed prompt/snippet primitives for editor and agent tooling —
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/arraypress/swift-prompt-kit.git", from: "1.0.0")
+    .package(url: "https://github.com/Sidewatch/swift-prompt-kit.git", from: "1.0.0")
 ]
 ```
 
