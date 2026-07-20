@@ -12,12 +12,17 @@ public struct PromptFile: Equatable {
     public var description: String
     public var body: String
     public let url: URL
+    /// `command: true` in the frontmatter — the prompt is a CLI line that should be
+    /// *run* (submitted) when sent to the terminal, not pasted unsubmitted. This is how
+    /// the old separate "Commands" list folds into one unified Prompts library.
+    public var isCommand: Bool
 
-    public init(title: String, description: String, body: String, url: URL) {
+    public init(title: String, description: String, body: String, url: URL, isCommand: Bool = false) {
         self.title = title
         self.description = description
         self.body = body
         self.url = url
+        self.isCommand = isCommand
     }
 
     /// Bridges to the snippet type the send / insert / placeholder paths already take.
@@ -37,6 +42,7 @@ public struct PromptFile: Equatable {
     /// testing without touching disk.
     public static func parse(_ raw: String, url: URL) -> PromptFile {
         var title = "", description = "", body = raw
+        var isCommand = false
 
         if raw.hasPrefix("---") {
             let lines = raw.components(separatedBy: "\n")
@@ -48,6 +54,7 @@ public struct PromptFile: Equatable {
                     switch parts[0].lowercased() {
                     case "title":       title = value
                     case "description": description = value
+                    case "command":     isCommand = (value.lowercased() == "true")
                     default:            break
                     }
                 }
@@ -60,7 +67,7 @@ public struct PromptFile: Equatable {
             description = body.components(separatedBy: "\n")
                 .first(where: { !$0.trimmingCharacters(in: .whitespaces).isEmpty }) ?? ""
         }
-        return PromptFile(title: title, description: description, body: body, url: url)
+        return PromptFile(title: title, description: description, body: body, url: url, isCommand: isCommand)
     }
 
     private static func unquote(_ s: String) -> String {
@@ -85,6 +92,7 @@ public struct PromptFile: Equatable {
     public func serialized() -> String {
         var head = "---\ntitle: \(title)\n"
         if !description.isEmpty { head += "description: \(description)\n" }
+        if isCommand { head += "command: true\n" }
         head += "---\n\n"
         return head + body
     }
