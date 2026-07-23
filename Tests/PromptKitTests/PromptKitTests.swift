@@ -53,6 +53,30 @@ final class PromptKitTests: XCTestCase {
         XCTAssertEqual(PromptFile.parse(raw, url: url).title, "Ratio 3:1 review")
     }
 
+    func testBodyOpeningWithThematicBreakIsNotFrontmatter() {
+        let raw = "---\n\nDo the thing carefully.\n\n---\n\nfinal section"
+        let pf = PromptFile.parse(raw, url: url)
+        XCTAssertEqual(pf.body, raw)                        // nothing dropped
+        XCTAssertEqual(pf.title, "api review")              // filename fallback
+    }
+
+    func testDashesWithTrailingTextAreNotFrontmatter() {
+        let raw = "--- draft ---\ntitle: not a key\n---\nrest"
+        XCTAssertEqual(PromptFile.parse(raw, url: url).body, raw)
+    }
+
+    func testLongerDashRunIsNotFrontmatter() {
+        let raw = "----\ntitle: x\n----\nrest"
+        XCTAssertEqual(PromptFile.parse(raw, url: url).body, raw)
+    }
+
+    func testProseBetweenRulesWithColonLineStaysBody() {
+        // "note: use staging" is key:value-shaped, but the prose line around it is
+        // not — the whole span must stay body, not parse as frontmatter.
+        let raw = "---\nSome prose first\nnote: use staging\n---\nrest"
+        XCTAssertEqual(PromptFile.parse(raw, url: url).body, raw)
+    }
+
     func testSerializeRoundTrips() {
         let pf = PromptFile(title: "T", description: "D", body: "the body", url: url)
         let reparsed = PromptFile.parse(pf.serialized(), url: url)
@@ -64,6 +88,15 @@ final class PromptKitTests: XCTestCase {
     func testSerializeOmitsEmptyDescription() {
         let pf = PromptFile(title: "T", description: "", body: "b", url: url)
         XCTAssertFalse(pf.serialized().contains("description:"))
+    }
+
+    func testSerializeFlattensNewlinesInTitleAndDescription() {
+        let pf = PromptFile(title: "X\ncommand: true", description: "line1\nline2", body: "b", url: url)
+        let reparsed = PromptFile.parse(pf.serialized(), url: url)
+        XCTAssertEqual(reparsed.title, "X command: true")
+        XCTAssertEqual(reparsed.description, "line1 line2")
+        XCTAssertFalse(reparsed.isCommand)                  // no injected command: key
+        XCTAssertEqual(reparsed.body, "b")
     }
 
     func testPromptBridge() {
@@ -167,5 +200,28 @@ final class PromptKitTests: XCTestCase {
     func testExpandNoBracesShortCircuits() {
         XCTAssertEqual(PromptPlaceholders.expand("no tokens here", context: PromptContext()),
                        "no tokens here")
+    }
+
+    func testExpandDoesNotReExpandTokensInsideSubstitutedValues() {
+        // A selection that itself contains a placeholder-shaped string (real code with
+        // brace template strings) must survive verbatim — no clipboard leak.
+        let ctx = PromptContext(selection: "let s = \"{clipboard}\"")
+        let out = PromptPlaceholders.expand("Review {selection}", context: ctx,
+                                            clipboard: "SECRET-TOKEN")
+        XCTAssertEqual(out, "Review let s = \"{clipboard}\"")
+    }
+
+    func testExpandDoesNotReExpandTokensInsideFileNames() {
+        let ctx = PromptContext(fileRelative: "{branch}.swift", branch: "main")
+        XCTAssertEqual(PromptPlaceholders.expand("Check {file} on {branch}", context: ctx),
+                       "Check {branch}.swift on main")
+    }
+
+    func testExpandUnmatchedBracesLeftLiteral() {
+        let ctx = PromptContext(fileRelative: "a.swift")
+        XCTAssertEqual(PromptPlaceholders.expand("open { brace {file}", context: ctx),
+                       "open { brace a.swift")
+        XCTAssertEqual(PromptPlaceholders.expand("{{file}", context: ctx), "{a.swift")
+        XCTAssertEqual(PromptPlaceholders.expand("tail {", context: ctx), "tail {")
     }
 }

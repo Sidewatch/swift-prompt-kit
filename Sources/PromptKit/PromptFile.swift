@@ -44,9 +44,10 @@ public struct PromptFile: Equatable {
         var title = "", description = "", body = raw
         var isCommand = false
 
-        if raw.hasPrefix("---") {
-            let lines = raw.components(separatedBy: "\n")
-            if let close = lines.dropFirst().firstIndex(where: { $0.trimmingCharacters(in: .whitespaces) == "---" }) {
+        let lines = raw.components(separatedBy: "\n")
+        if lines.first?.trimmingCharacters(in: .whitespaces) == "---" {
+            if let close = lines.dropFirst().firstIndex(where: { $0.trimmingCharacters(in: .whitespaces) == "---" }),
+               looksLikeFrontmatter(lines[1..<close]) {
                 for line in lines[1..<close] {
                     let parts = line.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
                     guard parts.count == 2 else { continue }
@@ -70,6 +71,25 @@ public struct PromptFile: Equatable {
         return PromptFile(title: title, description: description, body: body, url: url, isCommand: isCommand)
     }
 
+    /// True when every non-blank line is a `key: value` pair with a bare token key and
+    /// at least one such pair exists. This is what separates real frontmatter from a
+    /// body that merely *opens* with a `---` thematic break — prose between two rules
+    /// must stay body, not be swallowed (and silently dropped) as frontmatter.
+    private static func looksLikeFrontmatter(_ lines: ArraySlice<String>) -> Bool {
+        var sawKey = false
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty { continue }
+            let parts = trimmed.split(separator: ":", maxSplits: 1)
+            guard parts.count == 2,
+                  !parts[0].isEmpty,
+                  parts[0].allSatisfy({ $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" })
+            else { return false }
+            sawKey = true
+        }
+        return sawKey
+    }
+
     private static func unquote(_ s: String) -> String {
         var t = s
         for q in ["\"", "'"] where t.hasPrefix(q) && t.hasSuffix(q) && t.count >= 2 {
@@ -90,11 +110,19 @@ public struct PromptFile: Equatable {
     /// Serializes to `title`/`description` frontmatter + body — the on-disk form a new
     /// prompt or an edit-via-tab save round-trips through.
     public func serialized() -> String {
-        var head = "---\ntitle: \(title)\n"
-        if !description.isEmpty { head += "description: \(description)\n" }
+        var head = "---\ntitle: \(flattened(title))\n"
+        if !description.isEmpty { head += "description: \(flattened(description))\n" }
         if isCommand { head += "command: true\n" }
         head += "---\n\n"
         return head + body
+    }
+
+    /// Frontmatter is line-oriented: a newline inside a value (an imported multi-line
+    /// title, say) would break the `key: value` structure on reload — and a crafted
+    /// continuation like `command: true` would parse as a real key — so collapse any
+    /// line break to a space before writing.
+    private func flattened(_ value: String) -> String {
+        value.components(separatedBy: .newlines).joined(separator: " ")
     }
 
     // MARK: - Folders

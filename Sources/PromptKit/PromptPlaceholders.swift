@@ -48,6 +48,10 @@ public enum PromptPlaceholders {
     /// Replace the known placeholders in `template` using `context`, `clipboard`, and
     /// `now`. Unknown `{…}` tokens are left untouched.
     ///
+    /// Expansion is a single pass over the template only — substituted values are never
+    /// re-scanned, so a selection/clipboard/path containing a literal `{…}` token (real
+    /// code full of brace template strings) survives verbatim instead of being expanded.
+    ///
     /// - Parameters:
     ///   - clipboard: the current clipboard string, or nil (the app supplies
     ///     `NSPasteboard.general.string(forType: .string)`).
@@ -60,20 +64,45 @@ public enum PromptPlaceholders {
         df.dateFormat = "yyyy-MM-dd"; let date = df.string(from: now)
         df.dateFormat = "HH:mm";      let time = df.string(from: now)
 
-        var out = template
-        func sub(_ token: String, _ value: String?) {
-            out = out.replacingOccurrences(of: "{\(token)}", with: value ?? "", options: .caseInsensitive)
+        let values: [String: String?] = [
+            "date": date, "today": date,
+            "time": time,
+            "datetime": "\(date) \(time)",
+            "file": context.fileRelative,
+            "filename": context.fileName,
+            "selection": context.selection,
+            "line": context.line.map(String.init),
+            "branch": context.branch,
+            "repo": context.repo,
+            "clipboard": clipboard,
+        ]
+
+        var out = ""
+        var i = template.startIndex
+        while i < template.endIndex {
+            guard let open = template[i...].firstIndex(of: "{") else {
+                out += template[i...]
+                break
+            }
+            out += template[i..<open]
+            // The token name runs to the first `}` but must not cross another `{`.
+            var j = template.index(after: open)
+            while j < template.endIndex, template[j] != "}", template[j] != "{" {
+                j = template.index(after: j)
+            }
+            if j < template.endIndex, template[j] == "}" {
+                let name = template[template.index(after: open)..<j].lowercased()
+                if let value = values[name] {
+                    out += value ?? ""
+                } else {
+                    out += template[open...j]
+                }
+                i = template.index(after: j)
+            } else {
+                out += String(template[open])
+                i = template.index(after: open)
+            }
         }
-        sub("date", date); sub("today", date)
-        sub("time", time)
-        sub("datetime", "\(date) \(time)")
-        sub("file", context.fileRelative)
-        sub("filename", context.fileName)
-        sub("selection", context.selection)
-        sub("line", context.line.map(String.init))
-        sub("branch", context.branch)
-        sub("repo", context.repo)
-        sub("clipboard", clipboard)
         return out
     }
 }
