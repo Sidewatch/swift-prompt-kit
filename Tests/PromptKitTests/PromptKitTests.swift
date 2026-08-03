@@ -99,6 +99,45 @@ final class PromptKitTests: XCTestCase {
         XCTAssertEqual(reparsed.body, "b")
     }
 
+    // MARK: - category
+
+    func testParsesCategory() {
+        let raw = "---\ntitle: T\ncategory: Understand\n---\nbody"
+        XCTAssertEqual(PromptFile.parse(raw, url: url).category, "Understand")
+    }
+
+    func testCategoryDefaultsEmpty() {
+        XCTAssertEqual(PromptFile.parse("---\ntitle: T\n---\nbody", url: url).category, "")
+    }
+
+    func testCategoryRoundTrips() {
+        let pf = PromptFile(title: "T", description: "D", body: "b", url: url, category: "Debug")
+        XCTAssertEqual(PromptFile.parse(pf.serialized(), url: url).category, "Debug")
+    }
+
+    func testSerializeOmitsEmptyCategory() {
+        let pf = PromptFile(title: "T", description: "", body: "b", url: url)
+        XCTAssertFalse(pf.serialized().contains("category:"))
+    }
+
+    func testCategoryFlattensNewlines() {
+        // Same injection guard as title/description: a newline in the value must not be
+        // able to forge a second frontmatter key on reload.
+        let pf = PromptFile(title: "T", description: "", body: "b", url: url,
+                            category: "Debug\ncommand: true")
+        let reparsed = PromptFile.parse(pf.serialized(), url: url)
+        XCTAssertEqual(reparsed.category, "Debug command: true")
+        XCTAssertFalse(reparsed.isCommand)
+    }
+
+    func testCategoryAndCommandCoexist() {
+        let pf = PromptFile(title: "T", description: "D", body: "b", url: url,
+                            isCommand: true, category: "Git")
+        let reparsed = PromptFile.parse(pf.serialized(), url: url)
+        XCTAssertTrue(reparsed.isCommand)
+        XCTAssertEqual(reparsed.category, "Git")
+    }
+
     func testPromptBridge() {
         let pf = PromptFile(title: "T", description: "D", body: "b", url: url)
         XCTAssertEqual(pf.prompt, Prompt(title: "T", body: "b"))

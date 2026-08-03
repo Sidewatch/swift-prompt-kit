@@ -16,13 +16,19 @@ public struct PromptFile: Equatable {
     /// *run* (submitted) when sent to the terminal, not pasted unsubmitted. This is how
     /// the old separate "Commands" list folds into one unified Prompts library.
     public var isCommand: Bool
+    /// `category:` in the frontmatter — a free-text group label ("Understand", "Debug").
+    /// Empty means ungrouped; a picker is free to fall back to its own section for those.
+    /// Free-text rather than an enum so a user's own category needs no code change.
+    public var category: String
 
-    public init(title: String, description: String, body: String, url: URL, isCommand: Bool = false) {
+    public init(title: String, description: String, body: String, url: URL,
+                isCommand: Bool = false, category: String = "") {
         self.title = title
         self.description = description
         self.body = body
         self.url = url
         self.isCommand = isCommand
+        self.category = category
     }
 
     /// Bridges to the snippet type the send / insert / placeholder paths already take.
@@ -41,7 +47,7 @@ public struct PromptFile: Equatable {
     /// The pure parse behind ``load(_:)`` — frontmatter + body from raw text. Exposed for
     /// testing without touching disk.
     public static func parse(_ raw: String, url: URL) -> PromptFile {
-        var title = "", description = "", body = raw
+        var title = "", description = "", body = raw, category = ""
         var isCommand = false
 
         let lines = raw.components(separatedBy: "\n")
@@ -56,6 +62,7 @@ public struct PromptFile: Equatable {
                     case "title":       title = value
                     case "description": description = value
                     case "command":     isCommand = (value.lowercased() == "true")
+                    case "category":    category = value
                     default:            break
                     }
                 }
@@ -68,7 +75,8 @@ public struct PromptFile: Equatable {
             description = body.components(separatedBy: "\n")
                 .first(where: { !$0.trimmingCharacters(in: .whitespaces).isEmpty }) ?? ""
         }
-        return PromptFile(title: title, description: description, body: body, url: url, isCommand: isCommand)
+        return PromptFile(title: title, description: description, body: body, url: url,
+                          isCommand: isCommand, category: category)
     }
 
     /// True when every non-blank line is a `key: value` pair with a bare token key and
@@ -112,6 +120,7 @@ public struct PromptFile: Equatable {
     public func serialized() -> String {
         var head = "---\ntitle: \(flattened(title))\n"
         if !description.isEmpty { head += "description: \(flattened(description))\n" }
+        if !category.isEmpty { head += "category: \(flattened(category))\n" }
         if isCommand { head += "command: true\n" }
         head += "---\n\n"
         return head + body
