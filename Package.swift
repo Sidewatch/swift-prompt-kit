@@ -10,7 +10,8 @@ let package = Package(
         .library(name: "PromptKit", targets: ["PromptKit"]),
     ],
     targets: [
-        .target(name: "PromptKit", path: "Sources"),
+        .target(name: "PromptKit", path: "Sources",
+                swiftSettings: [.unsafeFlags(["-strict-concurrency=complete"])]),
         .testTarget(name: "PromptKitTests", dependencies: ["PromptKit"], path: "Tests"),
     ]
 )
