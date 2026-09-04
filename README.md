@@ -13,7 +13,7 @@ Reusable, file-backed prompt/snippet primitives for editor and agent tooling —
 ## Requirements
 
 - macOS 14+
-- Swift 6.0+ (Swift 6 language mode)
+- Swift 6.2+ (Swift 6 language mode)
 
 ## Installation
 
