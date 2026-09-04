@@ -9,7 +9,7 @@ Reusable, file-backed prompt/snippet primitives for editor and agent tooling —
 ## Module map
 
 - `Core/` — the engine: PromptFile
-- `Models/` — value types — the shape of a thing, nothing else: Prompt
+- `Models/` — value types — the shape of a thing, nothing else: Prompt, PromptContext
 - `Support/` — pure helpers: parsing, escaping, validation: PromptPlaceholders
 
 ## Rules
