@@ -49,3 +49,10 @@ let filled = PromptPlaceholders.expand(
 
 - Persistence of a user's snippet list (e.g. `UserDefaults`) and the global prompts folder are intentionally **not** here — those are app-configuration concerns. This package is the pure model + parsing layer.
 - `PromptPlaceholders.legend` exposes the `(token, description)` pairs for rendering a placeholder hint in a UI.
+
+## For agents
+
+Read `CONTRIBUTING.md` first: the folder layout and the PR rules. `swift test` is the whole
+check, and a new test must fail before the change it covers. `CLAUDE.md` / `AGENTS.md` carry a
+module map.
+
