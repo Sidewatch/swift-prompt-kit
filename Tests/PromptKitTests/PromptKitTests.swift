@@ -1,12 +1,18 @@
 //
 //  PromptKitTests.swift
-//  Tests for PromptFile frontmatter parse/serialize round-trip and the pure
-//  PromptPlaceholders.expand token substitution (deterministic via injected now).
+//  PromptKitTests
+//
+//  Tests for prompt parsing: frontmatter title and description, the body, placeholders, and the
+//  injection vectors that must stay closed.
+//
+//  Created by David Sherlock on 7/19/26.
 //
 
 import XCTest
 @testable import PromptKit
 
+/// Tests for prompt parsing: frontmatter title and description, the body, placeholders, and the
+/// injection vectors that must stay closed.
 final class PromptKitTests: XCTestCase {
 
     private let url = URL(fileURLWithPath: "/prompts/api-review.md")

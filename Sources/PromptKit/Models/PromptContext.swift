@@ -2,6 +2,11 @@
 //  PromptContext.swift
 //  PromptKit
 //
+//  Editor/repo context used to expand `{…}` placeholders in a snippet at the moment it's sent,
+//  inserted, or copied.
+//
+//  Created by David Sherlock on 9/5/26.
+//
 
 import Foundation
 
