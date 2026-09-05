@@ -1,3 +1,12 @@
+//
+//  PromptFile.swift
+//  PromptKit
+//
+//  A file-backed prompt — one `.md` file, one prompt.
+//
+//  Created by David Sherlock on 7/19/26.
+//
+
 import Foundation
 
 /// A file-backed prompt — one `.md` file, one prompt. Optional YAML frontmatter carries

@@ -1,3 +1,14 @@
+//
+//  PromptPlaceholders.swift
+//  PromptKit
+//
+//  Expands dynamic placeholders in a prompt/command body when it's used, so a saved snippet
+//  like `Review {file} for bugs (branch {branch}, {today})` fills itself in against the live
+//  editor + repo.
+//
+//  Created by David Sherlock on 7/19/26.
+//
+
 import Foundation
 
 /// Expands dynamic placeholders in a prompt/command body when it's used, so a saved
