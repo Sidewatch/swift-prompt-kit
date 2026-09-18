@@ -59,12 +59,15 @@ public struct PromptFile: Equatable {
         var title = "", description = "", body = raw, category = ""
         var isCommand = false
 
+        // `.whitespacesAndNewlines` throughout: a file authored on Windows ends every line in
+        // CRLF, and CR is not in `.whitespaces`, so `---\r` was never a fence — the metadata
+        // became the body and the title fell back to the filename (18 Sep 2026).
         let lines = raw.components(separatedBy: "\n")
-        if lines.first?.trimmingCharacters(in: .whitespaces) == "---" {
-            if let close = lines.dropFirst().firstIndex(where: { $0.trimmingCharacters(in: .whitespaces) == "---" }),
+        if lines.first?.trimmingCharacters(in: .whitespacesAndNewlines) == "---" {
+            if let close = lines.dropFirst().firstIndex(where: { $0.trimmingCharacters(in: .whitespacesAndNewlines) == "---" }),
                looksLikeFrontmatter(lines[1..<close]) {
                 for line in lines[1..<close] {
-                    let parts = line.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
+                    let parts = line.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                     guard parts.count == 2 else { continue }
                     let value = unquote(parts[1])
                     switch parts[0].lowercased() {
@@ -82,7 +85,8 @@ public struct PromptFile: Equatable {
         if title.isEmpty { title = prettifiedName(url) }
         if description.isEmpty {
             description = body.components(separatedBy: "\n")
-                .first(where: { !$0.trimmingCharacters(in: .whitespaces).isEmpty }) ?? ""
+                .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })?
+                .trimmingCharacters(in: .newlines) ?? ""
         }
         return PromptFile(title: title, description: description, body: body, url: url,
                           isCommand: isCommand, category: category)
@@ -95,7 +99,7 @@ public struct PromptFile: Equatable {
     private static func looksLikeFrontmatter(_ lines: ArraySlice<String>) -> Bool {
         var sawKey = false
         for line in lines {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
             if trimmed.isEmpty { continue }
             let parts = trimmed.split(separator: ":", maxSplits: 1)
             guard parts.count == 2,

@@ -20,6 +20,19 @@ dead-code and risk-pattern scans, docs drift); line-by-line logic review was tar
 - Build: clean. Tests: green.
 - Nothing to fix in this package.
 
+## Logic review — 18 Sep 2026 (every source and test file, line by line)
+
+Fixed, pinned by a test that fails against the old code:
+
+- **A CRLF prompt file lost its frontmatter.** `PromptFile.parse` compared lines trimmed with
+  `.whitespaces`, which does not contain CR, so `---\r` was never a fence: the metadata became the
+  body, the title fell back to the filename and the description read `---`. Every trim in the parser
+  is `.whitespacesAndNewlines`, and a no-frontmatter description drops its trailing CR too.
+
+Reviewed and sound: `looksLikeFrontmatter`'s bare-key rule (prose between two rules stays body),
+unquoting, `serialized()`'s round trip and newline flattening, `create`'s `-2` / `-3` collision
+suffixes, `read`'s title sort, the placeholder expander's injection guards.
+
 ## Known non-issues (do not "fix" these again)
 
 - None recorded.
@@ -27,3 +40,4 @@ dead-code and risk-pattern scans, docs drift); line-by-line logic review was tar
 ## History
 
 - 17 Sep 2026 — full audit (app + all 20 libraries), Claude with David.
+- 18 Sep 2026 — logic review (every source and test file, line by line), Claude with David.

@@ -34,6 +34,20 @@ final class PromptKitTests: XCTestCase {
         XCTAssertEqual(pf.body, "Check every public endpoint.")
     }
 
+    func testCRLFFrontmatterParses() {
+        // A prompt file authored on Windows ends every line in CRLF. `.whitespaces` does not
+        // contain CR, so `---\r` was never a fence: the metadata became the body and the title
+        // fell back to the filename.
+        let raw = "---\r\ntitle: API Review\r\ndescription: Check the endpoints\r\ncommand: true\r\n---\r\nReview {file}.\r\n"
+        let pf = PromptFile.parse(raw, url: url)
+        XCTAssertEqual(pf.title, "API Review")
+        XCTAssertEqual(pf.description, "Check the endpoints")
+        XCTAssertTrue(pf.isCommand)
+        XCTAssertEqual(pf.body, "Review {file}.")
+        // No frontmatter: the description is the first line, without its CR.
+        XCTAssertEqual(PromptFile.parse("First line\r\nmore\r\n", url: url).description, "First line")
+    }
+
     func testTitleFallsBackToPrettifiedFilename() {
         let pf = PromptFile.parse("just a body line\n", url: url)
         XCTAssertEqual(pf.title, "api review")             // hyphen → space
