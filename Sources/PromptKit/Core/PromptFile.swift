@@ -10,27 +10,28 @@
 
 import Foundation
 
-/// A file-backed prompt — one `.md` file, one prompt. Optional YAML frontmatter carries
-/// the title + description (the `SKILL.md` convention), so an agent can author these and
-/// they show up in a Prompts list; the body follows. Editing one is just editing the file
-/// in a tab, and a save is a normal disk write — no special store round-trip.
-///
-/// Two folders typically feed a picker: a user-global one and a per-project
-/// `.sidewatch/prompts` (`projectDirectory(root:)`). Both read/write identically.
+/// A file-backed prompt — one `.md` file, one prompt. Optional YAML frontmatter carries the
+/// title and description (the `SKILL.md` convention), so an agent can author these; the body
+/// follows. Editing one is editing the file, and a save is a normal disk write.
+/// A user-global folder and a per-project `.sidewatch/prompts` (``projectDirectory(root:)``)
+/// typically feed a picker; both read and write identically.
 public struct PromptFile: Equatable {
+    /// The frontmatter `title`, else the prettified filename.
     public var title: String
+    /// The frontmatter `description`, else the body's first non-empty line.
     public var description: String
+    /// The text after the frontmatter: what is sent, inserted or copied.
     public var body: String
+    /// The file the prompt lives in.
     public let url: URL
-    /// `command: true` in the frontmatter — the prompt is a CLI line that should be
-    /// *run* (submitted) when sent to the terminal, not pasted unsubmitted. This is how
-    /// the old separate "Commands" list folds into one unified Prompts library.
+    /// `command: true` in the frontmatter — the prompt is a CLI line that should be *run*
+    /// (submitted) when sent to the terminal, not pasted unsubmitted.
     public var isCommand: Bool
     /// `category:` in the frontmatter — a free-text group label ("Understand", "Debug").
     /// Empty means ungrouped; a picker is free to fall back to its own section for those.
-    /// Free-text rather than an enum so a user's own category needs no code change.
     public var category: String
 
+    /// A prompt with the given fields; nothing is read or written.
     public init(title: String, description: String, body: String, url: URL,
                 isCommand: Bool = false, category: String = "") {
         self.title = title
@@ -61,8 +62,8 @@ public struct PromptFile: Equatable {
         var isCommand = false
 
         // `.whitespacesAndNewlines` throughout: a file authored on Windows ends every line in
-        // CRLF, and CR is not in `.whitespaces`, so `---\r` was never a fence — the metadata
-        // became the body and the title fell back to the filename (18 Sep 2026).
+        // CRLF, and CR is not in `.whitespaces`, so trimming with that would miss the `---\r`
+        // fence and turn the metadata into body.
         let lines = raw.components(separatedBy: "\n")
         if lines.first?.trimmingCharacters(in: .whitespacesAndNewlines) == "---" {
             if let close = lines.dropFirst().firstIndex(where: { $0.trimmingCharacters(in: .whitespacesAndNewlines) == "---" }),
@@ -112,6 +113,7 @@ public struct PromptFile: Equatable {
         return sawKey
     }
 
+    /// The value without one pair of matching surrounding quotes.
     private static func unquote(_ s: String) -> String {
         var t = s
         for q in ["\"", "'"] where t.hasPrefix(q) && t.hasSuffix(q) && t.count >= 2 {

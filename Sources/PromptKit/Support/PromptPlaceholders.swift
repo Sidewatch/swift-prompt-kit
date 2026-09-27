@@ -12,14 +12,11 @@
 
 import Foundation
 
-/// Expands dynamic placeholders in a prompt/command body when it's used, so a saved
-/// snippet like `Review {file} for bugs (branch {branch}, {today})` fills itself in
-/// against the live editor + repo. Known tokens are replaced (empty when the value
-/// isn't available); anything else in braces is left untouched.
-///
-/// Pure Foundation: the clipboard value and the "now" timestamp are injected by the
-/// caller (the app passes `NSPasteboard.general.string(forType:)` and `Date()`), so
-/// expansion is deterministic and testable with no AppKit dependency.
+/// Expands placeholders in a prompt or command body when it is used, so a saved snippet like
+/// `Review {file} for bugs (branch {branch}, {today})` fills itself in against the live editor
+/// and repo. Known tokens are replaced (empty when unavailable); other braces are left alone.
+/// Pure Foundation: the caller injects the clipboard string and "now", so expansion is
+/// deterministic and testable.
 public enum PromptPlaceholders {
 
     /// The tokens shown in an editor's placeholder legend.
@@ -36,17 +33,12 @@ public enum PromptPlaceholders {
         ("{clipboard}", "clipboard contents"),
     ]
 
-    /// Replace the known placeholders in `template` using `context`, `clipboard`, and
-    /// `now`. Unknown `{…}` tokens are left untouched.
-    ///
-    /// Expansion is a single pass over the template only — substituted values are never
-    /// re-scanned, so a selection/clipboard/path containing a literal `{…}` token (real
-    /// code full of brace template strings) survives verbatim instead of being expanded.
-    ///
+    /// Replaces the known placeholders in `template`; unknown `{…}` tokens are left untouched.
+    /// A single pass over the template: substituted values are never re-scanned, so a
+    /// selection or clipboard holding a literal `{…}` survives verbatim.
     /// - Parameters:
-    ///   - clipboard: the current clipboard string, or nil (the app supplies
-    ///     `NSPasteboard.general.string(forType: .string)`).
-    ///   - now: the reference time for date/time tokens; defaults to `Date()`.
+    ///   - clipboard: the current clipboard string, or nil.
+    ///   - now: the reference time for date/time tokens.
     public static func expand(_ template: String, context: PromptContext,
                               clipboard: String? = nil, now: Date = Date()) -> String {
         guard template.contains("{") else { return template }
