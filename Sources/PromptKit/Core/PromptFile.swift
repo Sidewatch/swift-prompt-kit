@@ -32,8 +32,10 @@ public struct PromptFile: Equatable {
     public var category: String
 
     /// A prompt with the given fields; nothing is read or written.
-    public init(title: String, description: String, body: String, url: URL,
-                isCommand: Bool = false, category: String = "") {
+    public init(
+        title: String, description: String, body: String, url: URL,
+        isCommand: Bool = false, category: String = ""
+    ) {
         self.title = title
         self.description = description
         self.body = body
@@ -67,17 +69,18 @@ public struct PromptFile: Equatable {
         let lines = raw.components(separatedBy: "\n")
         if lines.first?.trimmingCharacters(in: .whitespacesAndNewlines) == "---" {
             if let close = lines.dropFirst().firstIndex(where: { $0.trimmingCharacters(in: .whitespacesAndNewlines) == "---" }),
-               looksLikeFrontmatter(lines[1..<close]) {
+                looksLikeFrontmatter(lines[1..<close])
+            {
                 for line in lines[1..<close] {
                     let parts = line.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                     guard parts.count == 2 else { continue }
                     let value = unquote(parts[1])
                     switch parts[0].lowercased() {
-                    case "title":       title = value
+                    case "title": title = value
                     case "description": description = value
-                    case "command":     isCommand = (value.lowercased() == "true")
-                    case "category":    category = value
-                    default:            break
+                    case "command": isCommand = (value.lowercased() == "true")
+                    case "category": category = value
+                    default: break
                     }
                 }
                 body = lines[(close + 1)...].joined(separator: "\n").trimmingCharacters(in: .newlines)
@@ -86,12 +89,14 @@ public struct PromptFile: Equatable {
 
         if title.isEmpty { title = prettifiedName(url) }
         if description.isEmpty {
-            description = body.components(separatedBy: "\n")
+            description =
+                body.components(separatedBy: "\n")
                 .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })?
                 .trimmingCharacters(in: .newlines) ?? ""
         }
-        return PromptFile(title: title, description: description, body: body, url: url,
-                          isCommand: isCommand, category: category)
+        return PromptFile(
+            title: title, description: description, body: body, url: url,
+            isCommand: isCommand, category: category)
     }
 
     /// True when every non-blank line is a `key: value` pair with a bare token key and
@@ -105,8 +110,8 @@ public struct PromptFile: Equatable {
             if trimmed.isEmpty { continue }
             let parts = trimmed.split(separator: ":", maxSplits: 1)
             guard parts.count == 2,
-                  !parts[0].isEmpty,
-                  parts[0].allSatisfy({ $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" })
+                !parts[0].isEmpty,
+                parts[0].allSatisfy({ $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" })
             else { return false }
             sawKey = true
         }
@@ -160,9 +165,12 @@ public struct PromptFile: Equatable {
     /// Every `.md`/`.markdown`/`.txt` prompt in `dir`, sorted by title (empty when the
     /// folder doesn't exist).
     public static func read(_ dir: URL) -> [PromptFile] {
-        guard let files = try? FileManager.default.contentsOfDirectory(
-            at: dir, includingPropertiesForKeys: nil) else { return [] }
-        return files
+        guard
+            let files = try? FileManager.default.contentsOfDirectory(
+                at: dir, includingPropertiesForKeys: nil)
+        else { return [] }
+        return
+            files
             .filter { ["md", "markdown", "txt"].contains($0.pathExtension.lowercased()) }
             .compactMap(load)
             .sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }

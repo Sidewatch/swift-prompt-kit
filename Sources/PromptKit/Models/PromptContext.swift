@@ -28,8 +28,10 @@ public struct PromptContext {
     public var repo: String?
 
     /// A context; any value left nil expands to empty.
-    public init(fileRelative: String? = nil, fileName: String? = nil, selection: String? = nil,
-                line: Int? = nil, branch: String? = nil, repo: String? = nil) {
+    public init(
+        fileRelative: String? = nil, fileName: String? = nil, selection: String? = nil,
+        line: Int? = nil, branch: String? = nil, repo: String? = nil
+    ) {
         self.fileRelative = fileRelative
         self.fileName = fileName
         self.selection = selection

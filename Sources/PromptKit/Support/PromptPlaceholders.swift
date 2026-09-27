@@ -21,16 +21,64 @@ public enum PromptPlaceholders {
 
     /// The tokens shown in an editor's placeholder legend.
     public static let legend: [(token: String, desc: String)] = [
-        ("{file}",      String(localized: "active file, repo-relative", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
-        ("{filename}",  String(localized: "active file name", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
-        ("{selection}", String(localized: "selected text in the editor", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
-        ("{line}",      String(localized: "caret line number", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
-        ("{branch}",    String(localized: "current git branch", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
-        ("{repo}",      String(localized: "project / repo name", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
-        ("{date}",      String(localized: "today (YYYY-MM-DD)", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
-        ("{time}",      String(localized: "now (HH:MM)", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
-        ("{datetime}",  String(localized: "date + time", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
-        ("{clipboard}", String(localized: "clipboard contents", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")),
+        (
+            "{file}",
+            String(
+                localized: "active file, repo-relative", bundle: .module,
+                comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
+        (
+            "{filename}",
+            String(
+                localized: "active file name", bundle: .module,
+                comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
+        (
+            "{selection}",
+            String(
+                localized: "selected text in the editor", bundle: .module,
+                comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
+        (
+            "{line}",
+            String(
+                localized: "caret line number", bundle: .module,
+                comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
+        (
+            "{branch}",
+            String(
+                localized: "current git branch", bundle: .module,
+                comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
+        (
+            "{repo}",
+            String(
+                localized: "project / repo name", bundle: .module,
+                comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
+        (
+            "{date}",
+            String(
+                localized: "today (YYYY-MM-DD)", bundle: .module,
+                comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
+        (
+            "{time}",
+            String(
+                localized: "now (HH:MM)", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
+        (
+            "{datetime}",
+            String(
+                localized: "date + time", bundle: .module, comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
+        (
+            "{clipboard}",
+            String(
+                localized: "clipboard contents", bundle: .module,
+                comment: "Prompt placeholder legend: what the {…} token beside it expands to.")
+        ),
     ]
 
     /// Replaces the known placeholders in `template`; unknown `{…}` tokens are left untouched.
@@ -39,13 +87,15 @@ public enum PromptPlaceholders {
     /// - Parameters:
     ///   - clipboard: the current clipboard string, or nil.
     ///   - now: the reference time for date/time tokens.
-    public static func expand(_ template: String, context: PromptContext,
-                              clipboard: String? = nil, now: Date = Date()) -> String {
+    public static func expand(
+        _ template: String, context: PromptContext,
+        clipboard: String? = nil, now: Date = Date()
+    ) -> String {
         guard template.contains("{") else { return template }
         let df = DateFormatter()
         df.locale = Locale(identifier: "en_US_POSIX")
         df.dateFormat = "yyyy-MM-dd"; let date = df.string(from: now)
-        df.dateFormat = "HH:mm";      let time = df.string(from: now)
+        df.dateFormat = "HH:mm"; let time = df.string(from: now)
 
         let values: [String: String?] = [
             "date": date, "today": date,

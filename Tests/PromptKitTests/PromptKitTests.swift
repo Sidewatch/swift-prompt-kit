@@ -22,13 +22,13 @@ final class PromptKitTests: XCTestCase {
 
     func testParsesFrontmatterTitleAndDescription() {
         let raw = """
-        ---
-        title: API Review
-        description: Review the API surface
-        ---
+            ---
+            title: API Review
+            description: Review the API surface
+            ---
 
-        Check every public endpoint.
-        """
+            Check every public endpoint.
+            """
         let pf = PromptFile.parse(raw, url: url)
         XCTAssertEqual(pf.title, "API Review")
         XCTAssertEqual(pf.description, "Review the API surface")
@@ -51,7 +51,7 @@ final class PromptKitTests: XCTestCase {
 
     func testTitleFallsBackToPrettifiedFilename() {
         let pf = PromptFile.parse("just a body line\n", url: url)
-        XCTAssertEqual(pf.title, "api review")             // hyphen → space
+        XCTAssertEqual(pf.title, "api review")  // hyphen → space
         XCTAssertEqual(pf.description, "just a body line")  // first non-empty line
     }
 
@@ -77,8 +77,8 @@ final class PromptKitTests: XCTestCase {
     func testBodyOpeningWithThematicBreakIsNotFrontmatter() {
         let raw = "---\n\nDo the thing carefully.\n\n---\n\nfinal section"
         let pf = PromptFile.parse(raw, url: url)
-        XCTAssertEqual(pf.body, raw)                        // nothing dropped
-        XCTAssertEqual(pf.title, "api review")              // filename fallback
+        XCTAssertEqual(pf.body, raw)  // nothing dropped
+        XCTAssertEqual(pf.title, "api review")  // filename fallback
     }
 
     func testDashesWithTrailingTextAreNotFrontmatter() {
@@ -116,7 +116,7 @@ final class PromptKitTests: XCTestCase {
         let reparsed = PromptFile.parse(pf.serialized(), url: url)
         XCTAssertEqual(reparsed.title, "X command: true")
         XCTAssertEqual(reparsed.description, "line1 line2")
-        XCTAssertFalse(reparsed.isCommand)                  // no injected command: key
+        XCTAssertFalse(reparsed.isCommand)  // no injected command: key
         XCTAssertEqual(reparsed.body, "b")
     }
 
@@ -144,16 +144,18 @@ final class PromptKitTests: XCTestCase {
     func testCategoryFlattensNewlines() {
         // Same injection guard as title/description: a newline in the value must not be
         // able to forge a second frontmatter key on reload.
-        let pf = PromptFile(title: "T", description: "", body: "b", url: url,
-                            category: "Debug\ncommand: true")
+        let pf = PromptFile(
+            title: "T", description: "", body: "b", url: url,
+            category: "Debug\ncommand: true")
         let reparsed = PromptFile.parse(pf.serialized(), url: url)
         XCTAssertEqual(reparsed.category, "Debug command: true")
         XCTAssertFalse(reparsed.isCommand)
     }
 
     func testCategoryAndCommandCoexist() {
-        let pf = PromptFile(title: "T", description: "D", body: "b", url: url,
-                            isCommand: true, category: "Git")
+        let pf = PromptFile(
+            title: "T", description: "D", body: "b", url: url,
+            isCommand: true, category: "Git")
         let reparsed = PromptFile.parse(pf.serialized(), url: url)
         XCTAssertTrue(reparsed.isCommand)
         XCTAssertEqual(reparsed.category, "Git")
@@ -169,7 +171,7 @@ final class PromptKitTests: XCTestCase {
     func testSlug() {
         XCTAssertEqual(PromptFile.slug("New Prompt"), "new-prompt")
         XCTAssertEqual(PromptFile.slug("Fix: bug!!!"), "fix-bug")
-        XCTAssertEqual(PromptFile.slug("!!!"), "prompt")     // punctuation-only fallback
+        XCTAssertEqual(PromptFile.slug("!!!"), "prompt")  // punctuation-only fallback
     }
 
     // MARK: - projectDirectory
@@ -210,14 +212,17 @@ final class PromptKitTests: XCTestCase {
 
     private func fixedNow() -> Date {
         // 2026-07-19 14:05:00 UTC.
-        DateComponents(calendar: Calendar(identifier: .gregorian),
-                       timeZone: TimeZone(identifier: "UTC"),
-                       year: 2026, month: 7, day: 19, hour: 14, minute: 5).date!
+        DateComponents(
+            calendar: Calendar(identifier: .gregorian),
+            timeZone: TimeZone(identifier: "UTC"),
+            year: 2026, month: 7, day: 19, hour: 14, minute: 5
+        ).date!
     }
 
     func testExpandFillsContextTokens() {
-        let ctx = PromptContext(fileRelative: "src/main.swift", fileName: "main.swift",
-                                selection: "let x = 1", line: 42, branch: "feature", repo: "myrepo")
+        let ctx = PromptContext(
+            fileRelative: "src/main.swift", fileName: "main.swift",
+            selection: "let x = 1", line: 42, branch: "feature", repo: "myrepo")
         let out = PromptPlaceholders.expand(
             "Review {file} ({filename}) line {line} on {branch} of {repo}: {selection}",
             context: ctx)
@@ -232,8 +237,9 @@ final class PromptKitTests: XCTestCase {
     func testExpandDateTimeDeterministic() {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone.current
-        let out = PromptPlaceholders.expand("{date} {time} | {datetime} | {today}",
-                                            context: PromptContext(), now: fixedNow())
+        let out = PromptPlaceholders.expand(
+            "{date} {time} | {datetime} | {today}",
+            context: PromptContext(), now: fixedNow())
         // Exact strings depend on the machine's timezone; assert structure instead.
         XCTAssertTrue(out.contains("|"))
         XCTAssertFalse(out.contains("{date}"))
@@ -242,8 +248,9 @@ final class PromptKitTests: XCTestCase {
     }
 
     func testExpandClipboardInjected() {
-        let out = PromptPlaceholders.expand("paste: {clipboard}", context: PromptContext(),
-                                            clipboard: "copied text")
+        let out = PromptPlaceholders.expand(
+            "paste: {clipboard}", context: PromptContext(),
+            clipboard: "copied text")
         XCTAssertEqual(out, "paste: copied text")
     }
 
@@ -258,29 +265,33 @@ final class PromptKitTests: XCTestCase {
     }
 
     func testExpandNoBracesShortCircuits() {
-        XCTAssertEqual(PromptPlaceholders.expand("no tokens here", context: PromptContext()),
-                       "no tokens here")
+        XCTAssertEqual(
+            PromptPlaceholders.expand("no tokens here", context: PromptContext()),
+            "no tokens here")
     }
 
     func testExpandDoesNotReExpandTokensInsideSubstitutedValues() {
         // A selection that itself contains a placeholder-shaped string (real code with
         // brace template strings) must survive verbatim — no clipboard leak.
         let ctx = PromptContext(selection: "let s = \"{clipboard}\"")
-        let out = PromptPlaceholders.expand("Review {selection}", context: ctx,
-                                            clipboard: "SECRET-TOKEN")
+        let out = PromptPlaceholders.expand(
+            "Review {selection}", context: ctx,
+            clipboard: "SECRET-TOKEN")
         XCTAssertEqual(out, "Review let s = \"{clipboard}\"")
     }
 
     func testExpandDoesNotReExpandTokensInsideFileNames() {
         let ctx = PromptContext(fileRelative: "{branch}.swift", branch: "main")
-        XCTAssertEqual(PromptPlaceholders.expand("Check {file} on {branch}", context: ctx),
-                       "Check {branch}.swift on main")
+        XCTAssertEqual(
+            PromptPlaceholders.expand("Check {file} on {branch}", context: ctx),
+            "Check {branch}.swift on main")
     }
 
     func testExpandUnmatchedBracesLeftLiteral() {
         let ctx = PromptContext(fileRelative: "a.swift")
-        XCTAssertEqual(PromptPlaceholders.expand("open { brace {file}", context: ctx),
-                       "open { brace a.swift")
+        XCTAssertEqual(
+            PromptPlaceholders.expand("open { brace {file}", context: ctx),
+            "open { brace a.swift")
         XCTAssertEqual(PromptPlaceholders.expand("{{file}", context: ctx), "{a.swift")
         XCTAssertEqual(PromptPlaceholders.expand("tail {", context: ctx), "tail {")
     }
