@@ -30,11 +30,16 @@ public struct PromptFile: Equatable {
     /// `category:` in the frontmatter — a free-text group label ("Understand", "Debug").
     /// Empty means ungrouped; a picker is free to fall back to its own section for those.
     public var category: String
+    /// Whose file this is: the person's own library, or a project's committed folder. Not in
+    /// the frontmatter — the folder a file was read from says it, and a file cannot promote
+    /// itself. A project command is pasted for the person to read rather than run, and never
+    /// filled from the clipboard or the selection (``PromptPlaceholders/expand(_:context:clipboard:now:allowsSensitive:)``).
+    public let origin: PromptOrigin
 
     /// A prompt with the given fields; nothing is read or written.
     public init(
         title: String, description: String, body: String, url: URL,
-        isCommand: Bool = false, category: String = ""
+        isCommand: Bool = false, category: String = "", origin: PromptOrigin = .global
     ) {
         self.title = title
         self.description = description
@@ -42,7 +47,16 @@ public struct PromptFile: Equatable {
         self.url = url
         self.isCommand = isCommand
         self.category = category
+        self.origin = origin
     }
+
+    /// Whether a host may run this prompt as a command on one click: a command of the person's
+    /// own. A project's command is still a command, pasted unsubmitted.
+    public var runsOnSend: Bool { isCommand && origin == .global }
+
+    /// Whether `{clipboard}` and `{selection}` may be filled in when this prompt is used — only
+    /// for the person's own prompts.
+    public var allowsSensitivePlaceholders: Bool { origin == .global }
 
     /// Bridges to the snippet type the send / insert / placeholder paths already take.
     public var prompt: Prompt { Prompt(title: title, body: body) }
@@ -52,14 +66,15 @@ public struct PromptFile: Equatable {
     /// Parses a prompt file. Frontmatter `title`/`description` win; without frontmatter
     /// the title falls back to the (prettified) filename and the description to the first
     /// non-empty line — so a plain `.md` still works.
-    public static func load(_ url: URL) -> PromptFile? {
+    public static func load(_ url: URL, origin: PromptOrigin = .global) -> PromptFile? {
         guard let raw = try? String(contentsOf: url, encoding: .utf8) else { return nil }
-        return parse(raw, url: url)
+        return parse(raw, url: url, origin: origin)
     }
 
-    /// The pure parse behind ``load(_:)`` — frontmatter + body from raw text. Exposed for
-    /// testing without touching disk.
-    public static func parse(_ raw: String, url: URL) -> PromptFile {
+    /// The pure parse behind ``load(_:origin:)`` — frontmatter + body from raw text. Exposed for
+    /// testing without touching disk. `origin` is the caller's knowledge of the folder, never read
+    /// from the text.
+    public static func parse(_ raw: String, url: URL, origin: PromptOrigin = .global) -> PromptFile {
         var title = "", description = "", body = raw, category = ""
         var isCommand = false
 
@@ -96,7 +111,7 @@ public struct PromptFile: Equatable {
         }
         return PromptFile(
             title: title, description: description, body: body, url: url,
-            isCommand: isCommand, category: category)
+            isCommand: isCommand, category: category, origin: origin)
     }
 
     /// True when every non-blank line is a `key: value` pair with a bare token key and
@@ -163,8 +178,8 @@ public struct PromptFile: Equatable {
     }
 
     /// Every `.md`/`.markdown`/`.txt` prompt in `dir`, sorted by title (empty when the
-    /// folder doesn't exist).
-    public static func read(_ dir: URL) -> [PromptFile] {
+    /// folder doesn't exist), each stamped with `origin` — a project's folder reads as `.project`.
+    public static func read(_ dir: URL, origin: PromptOrigin = .global) -> [PromptFile] {
         guard
             let files = try? FileManager.default.contentsOfDirectory(
                 at: dir, includingPropertiesForKeys: nil)
@@ -172,7 +187,7 @@ public struct PromptFile: Equatable {
         return
             files
             .filter { ["md", "markdown", "txt"].contains($0.pathExtension.lowercased()) }
-            .compactMap(load)
+            .compactMap { load($0, origin: origin) }
             .sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
     }
 

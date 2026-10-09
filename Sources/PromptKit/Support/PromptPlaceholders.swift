@@ -81,15 +81,22 @@ public enum PromptPlaceholders {
         ),
     ]
 
+    /// The tokens that read what the person has in hand rather than where they are: the
+    /// clipboard and the selection. A prompt that did not come from the person — a project's —
+    /// is not allowed to lift either.
+    public static let sensitiveTokens: Set<String> = ["clipboard", "selection"]
+
     /// Replaces the known placeholders in `template`; unknown `{…}` tokens are left untouched.
     /// A single pass over the template: substituted values are never re-scanned, so a
     /// selection or clipboard holding a literal `{…}` survives verbatim.
     /// - Parameters:
     ///   - clipboard: the current clipboard string, or nil.
     ///   - now: the reference time for date/time tokens.
+    ///   - allowsSensitive: whether ``sensitiveTokens`` are filled; when false they stay verbatim
+    ///     in the output, as an unknown token would (``PromptFile/allowsSensitivePlaceholders``).
     public static func expand(
         _ template: String, context: PromptContext,
-        clipboard: String? = nil, now: Date = Date()
+        clipboard: String? = nil, now: Date = Date(), allowsSensitive: Bool = true
     ) -> String {
         guard template.contains("{") else { return template }
         let df = DateFormatter()
@@ -97,7 +104,7 @@ public enum PromptPlaceholders {
         df.dateFormat = "yyyy-MM-dd"; let date = df.string(from: now)
         df.dateFormat = "HH:mm"; let time = df.string(from: now)
 
-        let values: [String: String?] = [
+        var values: [String: String?] = [
             "date": date, "today": date,
             "time": time,
             "datetime": "\(date) \(time)",
@@ -109,6 +116,7 @@ public enum PromptPlaceholders {
             "repo": context.repo,
             "clipboard": clipboard,
         ]
+        if !allowsSensitive { for token in sensitiveTokens { values[token] = nil } }
 
         var out = ""
         var i = template.startIndex

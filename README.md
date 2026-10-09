@@ -6,7 +6,8 @@ Reusable, file-backed prompt/snippet primitives for editor and agent tooling —
 
 - ✂️ **Titled snippets** — `Prompt { title, body }`: the `Codable`/`Equatable` atom a Prompts or Commands list stores
 - 📄 **File-backed prompts** — `PromptFile`: one `.md` file = one prompt. Optional YAML frontmatter (`title` / `description`, the `SKILL.md` convention) with a sensible no-frontmatter fallback (prettified filename → title, first non-empty line → description). `parse` / `serialized` round-trip; `read(_:)` lists a folder sorted by title; `create(in:base:content:)` writes a uniquely-named file; `projectDirectory(root:)` is the committed `<root>/.sidewatch/prompts` convention
-- 🔤 **Placeholder expansion** — `PromptPlaceholders.expand(_:context:clipboard:now:)` fills `{file}`, `{filename}`, `{selection}`, `{line}`, `{branch}`, `{repo}`, `{date}`/`{today}`, `{time}`, `{datetime}`, `{clipboard}` against live editor/repo context. **Pure**: the clipboard string and the reference `Date` are injected by the caller, so expansion is deterministic and needs no AppKit. Unknown `{…}` tokens are left untouched
+- 🏷️ **Origin** — `PromptFile.origin` (`PromptOrigin.global` / `.project`) is stamped by the folder a file was read from (`read(_:origin:)`, `load(_:origin:)`), never by the file. `runsOnSend` is true only for the person's own `command: true`; a project's command is pasted for the person to read. `allowsSensitivePlaceholders` is false for a project prompt
+- 🔤 **Placeholder expansion** — `PromptPlaceholders.expand(_:context:clipboard:now:)` fills `{file}`, `{filename}`, `{selection}`, `{line}`, `{branch}`, `{repo}`, `{date}`/`{today}`, `{time}`, `{datetime}`, `{clipboard}` against live editor/repo context. **Pure**: the clipboard string and the reference `Date` are injected by the caller, so expansion is deterministic and needs no AppKit. Unknown `{…}` tokens are left untouched; `allowsSensitive: false` leaves `{clipboard}` and `{selection}` verbatim too (`PromptPlaceholders.sensitiveTokens`)
 - 🪶 **Zero dependencies** — Foundation only
 - 🧪 **Tested** — frontmatter parse edge-cases (quotes, colons-in-values, unknown keys, fallbacks), serialize round-trip, slug/dedup, folder create+read, and every placeholder token
 
@@ -34,15 +35,17 @@ import PromptKit
 let pf = PromptFile.load(url)                 // frontmatter + body, or nil if unreadable
 print(pf?.title ?? "", pf?.body ?? "")
 
-// List a project's committed prompts.
-let prompts = PromptFile.read(PromptFile.projectDirectory(root: repoRoot))
+// List a project's committed prompts: stamped `.project`, so a host pastes their commands unsubmitted.
+let prompts = PromptFile.read(PromptFile.projectDirectory(root: repoRoot), origin: .project)
+prompts[0].runsOnSend                      // false for a project command
 
 // Expand placeholders at send time (caller supplies clipboard + now).
 let ctx = PromptContext(fileRelative: "src/main.swift", line: 42, branch: "feature", repo: "myrepo")
 let filled = PromptPlaceholders.expand(
     "Review {file} line {line} on {branch}",
     context: ctx,
-    clipboard: NSPasteboard.general.string(forType: .string))
+    clipboard: NSPasteboard.general.string(forType: .string),
+    allowsSensitive: prompt.allowsSensitivePlaceholders)   // a project prompt keeps {clipboard} and {selection} as written
 ```
 
 ## Notes

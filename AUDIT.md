@@ -33,6 +33,18 @@ Reviewed and sound: `looksLikeFrontmatter`'s bare-key rule (prose between two ru
 unquoting, `serialized()`'s round trip and newline flattening, `create`'s `-2` / `-3` collision
 suffixes, `read`'s title sort, the placeholder expander's injection guards.
 
+## Security review — 9 Oct 2026
+
+- **A project's prompt ran as the person's.** A `command: true` file in a checkout's
+  `.sidewatch/prompts` was submitted on one click with `{clipboard}` and `{selection}` filled in —
+  anyone who committed to the repository could run a command in the person's terminal with the
+  person's clipboard in it. `PromptOrigin` (Enums/) is stamped by the folder a file is read from
+  (`read(_:origin:)`, `load(_:origin:)`, `parse(_:url:origin:)`), never by the frontmatter;
+  `PromptFile.runsOnSend` is true only for a global command, `allowsSensitivePlaceholders` only for
+  a global prompt, and `PromptPlaceholders.expand(…, allowsSensitive: false)` leaves `{clipboard}`
+  and `{selection}` verbatim. `PromptOriginTests` (three tests). Mutants: `allowsSensitive`
+  ignored, and `read` dropping the origin — one failure each.
+
 ## Known non-issues (do not "fix" these again)
 
 - None recorded.
@@ -41,3 +53,4 @@ suffixes, `read`'s title sort, the placeholder expander's injection guards.
 
 - 17 Sep 2026 — full audit (app + all 20 libraries), Claude with David.
 - 18 Sep 2026 — logic review (every source and test file, line by line), Claude with David.
+- 9 Oct 2026 — security review: `PromptOrigin`, `runsOnSend`, `allowsSensitive` (section above); 37 tests.

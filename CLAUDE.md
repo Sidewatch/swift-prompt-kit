@@ -9,6 +9,7 @@ Reusable, file-backed prompt/snippet primitives for editor and agent tooling —
 ## Module map
 
 - `Core/` — the engine: PromptFile
+- `Enums/` — PromptOrigin (`global`: the person's own library; `project`: a checkout's `.sidewatch/prompts` — its commands are pasted, not run, and never read the clipboard or the selection)
 - `Models/` — value types — the shape of a thing, nothing else: Prompt, PromptContext
 - `Support/` — pure helpers: parsing, escaping, validation: PromptPlaceholders
 
