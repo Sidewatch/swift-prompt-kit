@@ -46,6 +46,16 @@ let filled = PromptPlaceholders.expand(
     context: ctx,
     clipboard: NSPasteboard.general.string(forType: .string),
     allowsSensitive: prompt.allowsSensitivePlaceholders)   // a project prompt keeps {clipboard} and {selection} as written
+
+// List a library: categories gather both folders, then each folder's uncategorised prompts.
+let shown = (mine + project).filter { $0.matches(query: searchText, category: scope) }
+for section in PromptLibraryLayout.sections(global: mine, project: project, preferring: ["Plan", "Build", "Debug"]) {
+    if section.showsHeader { addHeader(section.kind) }      // .category(name), .mine or .project
+    section.files.forEach(addRow)
+}
+
+// Import a pasted library: one prompt per `#` heading (outside code fences), or a JSON array.
+let imported = PromptImport.markdown(pastedText)
 ```
 
 ## Notes

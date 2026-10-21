@@ -9,9 +9,10 @@ Reusable, file-backed prompt/snippet primitives for editor and agent tooling —
 ## Module map
 
 - `Core/` — the engine: PromptFile
-- `Enums/` — PromptOrigin (`global`: the person's own library; `project`: a checkout's `.sidewatch/prompts` — its commands are pasted, not run, and never read the clipboard or the selection)
-- `Models/` — value types — the shape of a thing, nothing else: Prompt, PromptContext
-- `Support/` — pure helpers: parsing, escaping, validation: PromptPlaceholders
+- `Enums/` — PromptSectionKind (a category, or one folder's uncategorised prompts); PromptOrigin (`global`: the person's own library; `project`: a checkout's `.sidewatch/prompts` — its commands are pasted, not run, and never read the clipboard or the selection)
+- `Models/` — value types — the shape of a thing, nothing else: Prompt, PromptContext, PromptSection
+- `Extensions/` — PromptFile+Filter (`matches(query:category:)`: every field, trimmed, any case; the category scope any case)
+- `Support/` — pure helpers: parsing, escaping, validation: PromptPlaceholders, PromptImport (`markdown` / `json`: a pasted library split into prompts; `#` headings outside fences only, CRLF-safe), PromptLibraryLayout (`orderedCategories`: a preferred order then the alphabet, the first spelling naming a category; `sections`: categories across both folders, then each folder's uncategorised prompts, labelled only when something else is listed)
 
 ## Rules
 
